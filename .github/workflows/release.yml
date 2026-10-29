@@ -1,0 +1,23 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag"
+        required: false
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  cd:
+    uses: dotsem/actions/.github/workflows/flutter-cd.yml@v0
+    permissions:
+      contents: write
+    with:
+      targets: '["android-apk", "android-aab"]'
+      tag: ${{ inputs.tag || github.event.release.tag_name }}
