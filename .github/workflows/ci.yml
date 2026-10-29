@@ -1,0 +1,23 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: ["**.md"]
+  pull_request:
+    branches: ["**"]
+    paths-ignore: ["**.md"]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    uses: dotsem/actions/.github/workflows/flutter-ci.yml@v0
+    with:
+      pr-targets: '["android-apk"]'
+      push-targets: '["android-aab"]'
+
+      pr-build-mode: "debug"
+      push-build-mode: "release"
