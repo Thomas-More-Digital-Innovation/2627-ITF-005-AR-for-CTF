@@ -84,6 +84,7 @@ Devices without AR support get a plain QR scan mode that uses the same backend a
 | Full VPS (Niantic Spatial VPS 2.0, Immersal, MultiSet) | Requires scanning the entire venue in its final state, vendor cloud dependency; no conference precedent found |
 | ARKit ARWorldMap | iOS only; sensitive to lighting changes; size limits |
 | Flutter + Unity (AR Foundation) | Extra toolchain and dependency, weak Linux support, blurs MVVM; not needed for QR + plane anchoring |
+| Flutter + Unity + Vuforia (`flutter_embed_unity`, as used in the ITF mobile development course) | VuMarks (ID-encoding markers that are also 6DoF targets, free on the Basic licence) fit technically. Rejected: Vuforia officially supports only Windows for Unity development while the team works on Linux (Debian); the course setup pins exact Unity/Flutter/NDK versions with a fragile export pipeline; Vuforia's QR Barcode Scanner is a Premium feature. The learning goals do not require Vuforia or Unity |
 | `ar_flutter_plugin` | Last release 4 years ago, Sceneform-based, no image tracking |
 
 Cloud Anchors or a VPS remain possible as a later experiment behind the same `ArController` contract. They are not part of the core scope.
@@ -146,6 +147,8 @@ Event wifi is assumed to be unreliable.
 ### 5.1 Pattern
 
 MVVM with Riverpod. View (widgets) -> ViewModel (Riverpod notifiers) -> Repository -> data sources (REST API, local cache, `ArController`). The AR module is injected behind the `ArController` interface so it can be faked in tests and the non-AR fallback can share the same ViewModels.
+
+Riverpod is chosen over the `setState` + `ChangeNotifier` approach taught in the course: the app combines a remote API, an offline cache with a submission queue, a native AR event stream and role-dependent screens, which is beyond what screen-local state handles cleanly.
 
 ### 5.2 Platform guidelines
 
