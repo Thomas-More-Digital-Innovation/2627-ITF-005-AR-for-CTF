@@ -1,0 +1,25 @@
+# Flutter app. Run from the repo root as `just flutter <recipe>`.
+
+[private]
+default:
+    @just --list
+
+# Install dependencies
+get:
+    flutter pub get
+
+analyze:
+    flutter analyze
+
+test:
+    flutter test
+
+# mode: debug | profile | release
+run mode="debug":
+    flutter run --{{ mode }}
+
+devices:
+    flutter devices
+
+doctor:
+    flutter doctor

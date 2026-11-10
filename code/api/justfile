@@ -1,0 +1,29 @@
+# FastAPI backend. Run from the repo root as `just api <recipe>`.
+
+[private]
+default:
+    @just --list
+
+# Install dependencies into .venv
+sync:
+    uv sync
+
+# Dev server with auto-reload
+dev:
+    uv run fastapi dev main.py
+
+# Production-style server (no reload)
+run:
+    uv run fastapi run main.py
+
+# Run tests
+test:
+    uv run pytest
+
+# Lint code
+lint:
+    uv run ruff check .
+
+# Format code
+fmt:
+    uv run ruff format .
