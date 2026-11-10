@@ -19,7 +19,7 @@ concurrency:
 
 jobs:
   audit:
-    uses: dotsem/actions/.github/workflows/trivy-audit.yml@73b100bd41fb2bdb3e03366f4e7c5d5534866e5c
+    uses: dotsem/actions/.github/workflows/trivy-audit.yml@6e0528a9cf09ccd0879687a4989a1492e371d5b1 #v0.5.2
     permissions:
       contents: read
       pull-requests: write
