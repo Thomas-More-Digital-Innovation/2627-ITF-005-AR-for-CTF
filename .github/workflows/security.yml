@@ -19,12 +19,15 @@ concurrency:
 
 jobs:
   audit:
-    uses: dotsem/actions/.github/workflows/trivy-audit.yml@v0
+    uses: dotsem/actions/.github/workflows/trivy-audit.yml@73b100bd41fb2bdb3e03366f4e7c5d5534866e5c
     permissions:
       contents: read
       pull-requests: write
       issues: write
+      security-events: write
+      actions: read
     with:
       severity: "CRITICAL,HIGH"
       fail-on-findings: true
+
       manage-issue: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}

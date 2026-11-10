@@ -12,9 +12,12 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
   ci:
-    uses: dotsem/actions/.github/workflows/flutter-ci.yml@v0
+    uses: dotsem/actions/.github/workflows/flutter-ci.yml@73b100bd41fb2bdb3e03366f4e7c5d5534866e5c
     with:
       pr-targets: '["android-apk"]'
       push-targets: '["android-aab"]'
