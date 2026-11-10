@@ -19,5 +19,6 @@ jobs:
     permissions:
       contents: write
     with:
+      working-directory: code/flutter
       targets: '["android-apk", "android-aab"]'
       tag: ${{ inputs.tag || github.event.release.tag_name }}

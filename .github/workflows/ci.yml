@@ -19,6 +19,7 @@ jobs:
   ci:
     uses: dotsem/actions/.github/workflows/flutter-ci.yml@73b100bd41fb2bdb3e03366f4e7c5d5534866e5c
     with:
+      working-directory: code/flutter
       pr-targets: '["android-apk"]'
       push-targets: '["android-aab"]'
 
