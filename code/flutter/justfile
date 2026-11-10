@@ -23,3 +23,6 @@ devices:
 
 doctor:
     flutter doctor
+
+fmt:
+    dart format .
