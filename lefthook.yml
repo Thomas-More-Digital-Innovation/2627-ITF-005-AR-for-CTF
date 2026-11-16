@@ -1,0 +1,32 @@
+pre-commit:
+  parallel: true
+  jobs:
+    - name: gitleaks
+      tags: [security]
+      skip:
+        - run: "! command -v gitleaks"
+      run: gitleaks git --staged --verbose
+
+    - name: flutter
+      root: code/flutter/
+      glob: "*.dart"
+      group:
+        parallel: false
+        jobs:
+          - name: dart format
+            run: dart format {staged_files}
+            stage_fixed: true
+          - name: flutter analyze
+            run: flutter analyze
+
+    - name: api
+      root: code/api/
+      glob: "*.py"
+      group:
+        parallel: false
+        jobs:
+          - name: ruff format
+            run: uv run ruff format {staged_files}
+            stage_fixed: true
+          - name: ruff lint
+            run: uv run ruff check {staged_files}
