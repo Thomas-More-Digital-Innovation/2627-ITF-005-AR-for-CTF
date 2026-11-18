@@ -1,4 +1,4 @@
-include: package:flutter_lints/flutter.yaml
+include: package:very_good_analysis/analysis_options.11.0.0.yaml
 
 analyzer:
   exclude:
@@ -9,3 +9,14 @@ analyzer:
     - windows/**
     - macos/**
     - linux/**
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+
+linter:
+  rules:
+    # why: app, not a published package; docs only where the API is non-obvious
+    public_member_api_docs: false
+    # why: dart format's page width governs line length
+    lines_longer_than_80_chars: false
+    sort_pub_dependencies: false
+    flutter_style_todos: false
