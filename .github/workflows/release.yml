@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   cd:
-    uses: dotsem/actions/.github/workflows/flutter-cd.yml@6e0528a9cf09ccd0879687a4989a1492e371d5b1 #v0.5.2
+    uses: dotactions/flutter/.github/workflows/cd.yml@3290bcaf8b46e39b7f3126778f3ca23bec7adb16 # v0.1.0
     permissions:
       contents: write
     with:
