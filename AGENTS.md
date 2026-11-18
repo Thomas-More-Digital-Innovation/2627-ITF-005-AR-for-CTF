@@ -39,7 +39,7 @@ All code must be formatted and pass linting before a change is done. No exceptio
 - Flutter: `just flutter fmt`, `just flutter analyze` with zero issues (infos included), `just flutter test` green.
 - API: `just api fmt`, `just api lint` with zero findings, type check clean, `just api test` green.
 - Lint level is moderate:
-  - Flutter: `flutter_lints` plus `strict-casts`, `strict-inference`, `strict-raw-types` and extra rules such as `prefer_const_constructors`, `always_declare_return_types`, `prefer_final_locals`.
+  - Flutter: `very_good_analysis` (pinned `analysis_options.11.0.0.yaml`, includes `strict-casts`, `strict-inference`, `strict-raw-types`), with `public_member_api_docs`, `lines_longer_than_80_chars` and `sort_pub_dependencies` disabled.
   - Python: ruff rule sets `E`, `F`, `I`, `B`, `UP`, `SIM`, `ASYNC`, and basedpyright/pyright in standard mode.
 - Do not silence findings (`// ignore:`, `# noqa`, `# type: ignore`) unless there is no reasonable fix; add a comment explaining why.
 - Never edit generated files (`*.g.dart`, `*.freezed.dart`); regenerate them with `dart run build_runner build -d`.
