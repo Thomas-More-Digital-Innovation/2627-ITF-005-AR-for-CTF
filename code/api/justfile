@@ -1,29 +1,28 @@
-# FastAPI backend. Run from the repo root as `just api <recipe>`.
+# Go backend (net/http). Run from the repo root as `just api <recipe>`.
+
+set fallback
 
 [private]
 default:
     @just --list
 
-# Install dependencies into .venv
+# Download dependencies
 sync:
-    uv sync
+    go mod download
 
-# Dev server with auto-reload
-dev:
-    uv run fastapi dev main.py
-
-# Production-style server (no reload)
+# Run the server (:8000)
 run:
-    uv run fastapi run main.py
+    go run ./cmd/api
 
 # Run tests
 test:
-    uv run pytest
+    go test ./...
 
-# Lint code
+# Lint and vet code
 lint:
-    uv run ruff check .
+    go vet ./...
+    golangci-lint run
 
 # Format code
 fmt:
-    uv run ruff format .
+    gofmt -w .

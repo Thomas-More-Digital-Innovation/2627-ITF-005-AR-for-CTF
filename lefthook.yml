@@ -21,12 +21,12 @@ pre-commit:
 
     - name: api
       root: code/api/
-      glob: "*.py"
+      glob: "*.go"
       group:
         parallel: false
         jobs:
-          - name: ruff format
-            run: uv run ruff format {staged_files}
+          - name: gofmt
+            run: gofmt -w {staged_files}
             stage_fixed: true
-          - name: ruff lint
-            run: uv run ruff check {staged_files}
+          - name: golangci-lint
+            run: golangci-lint run

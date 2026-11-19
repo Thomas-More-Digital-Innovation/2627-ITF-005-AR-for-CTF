@@ -1,12 +1,17 @@
-name: CI Pipeline
+name: Flutter CI Pipeline
 
 on:
   push:
     branches: [main]
-    paths-ignore: ["**.md"]
+    paths: &paths
+      - "code/flutter/**"
+      - ".github/workflows/ci-flutter.yml"
+      - ".github/workflows/release.yml"
+      - ".github/workflows/security.yml"
+      - "!**.md"
   pull_request:
     branches: ["**"]
-    paths-ignore: ["**.md"]
+    paths: *paths
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

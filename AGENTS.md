@@ -9,7 +9,7 @@ Source of truth for decisions and their rationale: [documents/spec/001-technical
 ```txt
 code/
 ├── flutter/             Flutter app (package `ar_ctf`), native AR code lives in android/ (and later ios/)
-├── api/                 FastAPI backend (BFF), managed with uv, Python >= 3.14
+├── api/                 Go backend (BFF), `net/http` standard library
 └── docker-compose.yml   API + PostgreSQL (CTFd will be hosted somewhere else)
 documents/
 ├── spec/                Numbered specs: NNN-short-name.md
@@ -27,21 +27,21 @@ Run from the repo root. `just` lists everything.
 | Format | `just flutter fmt` | `just api fmt` |
 | Lint / analyze | `just flutter analyze` | `just api lint` |
 | Test | `just flutter test` | `just api test` |
-| Run | `just flutter run [debug\|profile\|release]` | `just api dev` (reload) / `just api run` |
+| Run | `just flutter run [debug\|profile\|release]` | `just api run` |
 | Environment | `just flutter devices`, `just flutter doctor` | |
 
-Each module also works on its own from its directory (`cd code/api && just dev`).
+Each module also works on its own from its directory (`cd code/api && just run`).
 
 ## Quality gate
 
 All code must be formatted and pass linting before a change is done. No exceptions for generated-looking or "temporary" code.
 
 - Flutter: `just flutter fmt`, `just flutter analyze` with zero issues (infos included), `just flutter test` green.
-- API: `just api fmt`, `just api lint` with zero findings, type check clean, `just api test` green.
+- API: `just api fmt`, `just api lint` (`go vet` + `golangci-lint`) with zero findings, `just api test` green.
 - Lint level is moderate:
   - Flutter: `very_good_analysis` (pinned `analysis_options.11.0.0.yaml`, includes `strict-casts`, `strict-inference`, `strict-raw-types`), with `public_member_api_docs`, `lines_longer_than_80_chars` and `sort_pub_dependencies` disabled.
-  - Python: ruff rule sets `E`, `F`, `I`, `B`, `UP`, `SIM`, `ASYNC`, and basedpyright/pyright in standard mode.
-- Do not silence findings (`// ignore:`, `# noqa`, `# type: ignore`) unless there is no reasonable fix; add a comment explaining why.
+  - Go: `gofmt` and `golangci-lint` default linters (`errcheck`, `govet`, `ineffassign`, `staticcheck`, `unused`).
+- Do not silence findings (`// ignore:`, `//nolint`) unless there is no reasonable fix; add a comment explaining why.
 - Never edit generated files (`*.g.dart`, `*.freezed.dart`); regenerate them with `dart run build_runner build -d`.
 
 ## Stack
@@ -52,7 +52,7 @@ All code must be formatted and pass linting before a change is done. No exceptio
 | Architecture | MVVM with Riverpod, code generation style |
 | AR anchoring | Printed QR code flat on the table; flag rendered on top of it |
 | AR implementation | **Open**, to be settled by the first spike: native ARCore + ML Kit behind a platform channel, or `ar_flutter_plugin_2`. Do not add an AR plugin or native AR code without asking |
-| Backend | FastAPI BFF with PostgreSQL |
+| Backend | Go BFF on `net/http` (`ServeMux` method and path patterns) with PostgreSQL |
 | Scoring | CTFd behind a `ScoringAdapter`. Desirable, not mandatory |
 | Coach tooling | In the mobile app under a coach role. No separate website |
 | Hosting | Docker Compose, same stack locally, on an own server or in the cloud |
@@ -104,7 +104,7 @@ Before writing any code, stop at the first rung that holds:
 
 1. **YAGNI:** Does this need to be built at all?
 2. **Reuse:** Does it already exist in this codebase? Reuse existing helpers and patterns.
-3. **Stdlib first:** Does the Dart SDK, the Flutter framework, the Python standard library or FastAPI already do this? Use it.
+3. **Stdlib first:** Does the Dart SDK, the Flutter framework or the Go standard library (`net/http`) already do this? Use it.
 4. **Native platform:** Does an Android/iOS platform feature cover it? Use it.
 5. **Existing deps:** Does an already-installed dependency solve it? Use it.
 6. **Simplicity:** Can this be one clean line? Make it one line.
@@ -124,11 +124,11 @@ Execution rules:
 - **No redundant comments:** No inline comments that repeat the code (e.g. `count++; // increment count`).
 - **If a comment doesn't answer "how?" or "why?", omit it.**
 - **Allowed comments:**
-  - Doc comments on public APIs: `///` dartdoc in Dart, docstrings in Python.
+  - Doc comments on public APIs: `///` dartdoc in Dart, doc comments in Go.
   - High-level `why:` / `how:` context explaining non-obvious constraints.
   - Actionable `todo:` comments describing future improvements or known rough edges.
   - `ponytail:` comments documenting intentional MVP simplifications.
-- **Style:** Short comments in lowercase (`// why: …` in Dart and Kotlin, `# why: …` in Python). Capital letters only for multi-line contextual explanations.
+- **Style:** Short comments in lowercase (`// why: …` in Dart, Kotlin and Go). Capital letters only for multi-line contextual explanations.
 
 ### Functions and files
 
