@@ -1,7 +1,7 @@
-# Usage: just <module> <recipe> [args]   e.g. `just flutter analyze`, `just api dev`
+# Usage: just <module> <recipe> [args]   e.g. `just flutter analyze`, `just api run`
 
 mod flutter 'code/flutter'
-mod api 'code/api'
+mod go 'code/api'
 
 [private]
 default:

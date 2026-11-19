@@ -24,7 +24,7 @@ The solution should be reusable for other events and venues.
 | Architecture | MVVM with Riverpod |
 | AR anchoring | Printed QR code laid flat at the stand; the flag is rendered on top of it |
 | AR implementation | Native ARCore (Android) and ARKit (iOS) behind a Flutter platform channel or with ar_flutter_plugin_2 |
-| Backend | FastAPI service (BFF) with PostgreSQL |
+| Backend | Go service (BFF) on `net/http` with PostgreSQL |
 | Scoring | CTFd, behind an adapter. Integration is desirable, not mandatory |
 | Coach tooling | In the mobile app, coach role. No separate website |
 | QR generation | Backend endpoint producing a printable PDF sheet, triggered from the coach app |
@@ -100,7 +100,7 @@ Cloud Anchors or a VPS remain possible as a later experiment behind the same `Ar
 └────────────┬─────────────┘
              │ REST
 ┌────────────▼─────────────┐
-│ FastAPI BFF              │
+│ Go BFF (net/http)        │
 │  events, flags, QR/PDF,  │
 │  AR presentation data,   │
 │  roles, identity         │
@@ -142,6 +142,14 @@ Event wifi is assumed to be unreliable.
 - Scanning and rendering work offline.
 - Only flag submission needs the network; it is queued and retried.
 
+### 4.6 Why Go with `net/http`
+
+- The backend owner knows Go; the BFF is small enough that the language choice is not otherwise constrained. CTFd is only reached over REST, so its being written in Python is irrelevant.
+- `net/http` `ServeMux` supports method and path patterns (`GET /flags/{id}`), and `crypto/hmac` covers QR signing. No router framework is needed.
+- The CTFd scoreboard poll is a goroutine with a ticker.
+- A single static binary keeps the Docker image small and the "run on a laptop at the venue" option simple.
+- Request validation is explicit and must be done for every endpoint at the boundary. The OpenAPI document is not generated for free; if a generated Dart client is wanted, add `huma` on top of `net/http` or write the spec first.
+
 ## 5. Mobile app
 
 ### 5.1 Pattern
@@ -173,7 +181,7 @@ Flags that matter should use "ask the stand" or a challenge, since a QR can be p
 
 ## 6. Deployment
 
-One `docker-compose` setup: FastAPI, PostgreSQL, CTFd (with its own database and cache). It can run on a laptop at the venue, on an own server, or in the cloud. TLS and authentication are designed with the assumption that the event network is untrusted.
+One `docker-compose` setup: the Go API, PostgreSQL, CTFd (with its own database and cache). It can run on a laptop at the venue, on an own server, or in the cloud. TLS and authentication are designed with the assumption that the event network is untrusted.
 
 ## 7. Risks
 

@@ -1,5 +1,7 @@
 # Flutter app. Run from the repo root as `just flutter <recipe>`.
 
+set fallback
+
 [private]
 default:
     @just --list
