@@ -1,4 +1,4 @@
-name: CI Pipeline
+name: Flutter CI Pipeline
 
 on:
   push:
