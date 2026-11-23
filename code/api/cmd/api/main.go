@@ -1,4 +1,4 @@
-// Command api is the BFF between the Flutter app and CTFd.
+// Command api serves booth data and checks answers for the AR CTF app.
 package main
 
 import (
