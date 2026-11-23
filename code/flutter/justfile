@@ -28,3 +28,6 @@ doctor:
 
 fmt:
     dart format .
+
+gen:
+    dart run build_runner build -d
