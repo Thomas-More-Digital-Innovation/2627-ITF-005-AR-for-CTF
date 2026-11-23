@@ -31,3 +31,6 @@ fmt:
 
 gen:
     dart run build_runner build -d
+
+gen-watch:
+    dart run build_runner watch -d
