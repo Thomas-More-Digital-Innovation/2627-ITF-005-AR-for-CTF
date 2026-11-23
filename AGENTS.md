@@ -66,6 +66,7 @@ Not used, do not introduce: Unity, Vuforia, Firebase, Cloud Anchors / VPS, BLE b
 ### Flutter app
 
 - Layers: View (widgets) → ViewModel (Riverpod notifiers) → Repository → data sources (REST client, local cache, `BoothDetector`). Widgets never call data sources directly.
+- Feature-first layout (spec 5.1): `lib/features/<feature>/data/{models,repositories}` and `lib/features/<feature>/presentation/{view_models,screens,widgets}`; cross-feature code in `lib/core/`. Features never import each other. Pure logic lives in `models/`. Widgets only use view model providers.
 - Riverpod with code generation: `flutter_riverpod`, `riverpod_annotation`, `riverpod_generator`, `build_runner`. Use `@riverpod` annotations, not hand-written providers.
 - Booth detection is accessed only through the `BoothDetector` interface (commands: `start`, `stop`; event stream: `sighted(BoothSighting)`, `lost(boothRef)`, `error`; `BoothSighting` = `boothRef` + scan token + optional pose). Implementations are swapped with a Riverpod provider override.
 - ViewModels must work without a pose. The pose-less QR detector is the fallback for phones that cannot run the chosen AR approach.

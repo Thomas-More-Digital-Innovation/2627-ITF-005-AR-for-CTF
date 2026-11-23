@@ -217,6 +217,26 @@ Event wifi is assumed to be unreliable.
 
 MVVM with Riverpod. View (widgets) -> ViewModel (Riverpod notifiers) -> Repository -> data sources (REST API, local cache, `BoothDetector`). Detection is injected behind the `BoothDetector` interface so it can be swapped and faked in tests.
 
+The code is organised feature-first, with two layers per feature:
+
+```txt
+lib/
+├── main.dart
+├── core/                  cross-feature code only (theme, API client, device ID, shared widgets)
+└── features/<feature>/
+    ├── data/
+    │   ├── models/        immutable value types; pure logic lives here as methods or functions
+    │   └── repositories/  wrap data sources (plugins, REST, cache); a repository's provider sits in its file
+    └── presentation/
+        ├── view_models/   Riverpod notifiers that screens watch; the only providers widgets use
+        ├── screens/
+        └── widgets/
+test/                      mirrors lib/
+```
+
+- A feature never imports another feature; shared code moves to `core/`. Folders are created when the first file needs them.
+- A repository wraps its data source directly. A `data/sources/` folder is added once a repository combines several sources; DTOs are split from models once an API shape differs from the model the app uses.
+
 Riverpod is chosen over the `setState` + `ChangeNotifier` approach taught in the course: the app combines a remote API, an offline cache, a camera-driven tracking stream and role-dependent screens, which is beyond what screen-local state handles cleanly.
 
 ### 5.2 Platform guidelines
