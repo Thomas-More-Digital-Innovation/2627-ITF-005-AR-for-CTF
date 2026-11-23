@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
-/// Full-screen camera preview that outlines every QR code in view.
 class ScanScreen extends ConsumerWidget {
   const new({super.key});
 

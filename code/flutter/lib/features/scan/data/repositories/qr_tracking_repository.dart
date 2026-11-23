@@ -9,7 +9,6 @@ part 'qr_tracking_repository.g.dart';
 /// The QR codes in one camera frame: payload → corners in image coordinates.
 typedef QrFrame = ({Map<String, List<Offset>> codes, Size imageSize});
 
-/// Detects QR codes on every camera frame, with their corner points.
 class QrTrackingRepository {
   new(this.controller);
 

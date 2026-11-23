@@ -53,7 +53,6 @@ Map<String, TrackedCode> dropLost(
     if (!value.isLostAt(now)) key: value,
 };
 
-/// Merges one camera frame's [detections] (payload → corners) into [codes].
 /// A code that was lost starts counting from one again.
 Map<String, TrackedCode> track(
   Map<String, TrackedCode> codes,

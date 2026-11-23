@@ -3,14 +3,11 @@ import 'package:ar_ctf/features/scan/presentation/view_models/scan_view_model.da
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// Outlines the QR codes in view on top of the camera preview.
-///
 /// why: codes seen but not yet tracked get a thin outline, to tell missed
 /// detections apart from codes the tracking filter still holds back.
 class TrackedCodesOverlay extends ConsumerWidget {
   const new({required this.size, super.key});
 
-  /// Size of the cover-fitted camera preview this overlay sits on.
   final Size size;
 
   @override
