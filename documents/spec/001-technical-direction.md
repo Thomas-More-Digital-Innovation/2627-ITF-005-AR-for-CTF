@@ -225,7 +225,7 @@ lib/
 ├── core/                  cross-feature code only (theme, API client, device ID, shared widgets)
 └── features/<feature>/
     ├── data/
-    │   ├── models/        immutable value types; pure logic lives here as methods or functions
+    │   ├── models/        immutable value types, with pure derived values and transforms as methods
     │   └── repositories/  wrap data sources (plugins, REST, cache); a repository's provider sits in its file
     └── presentation/
         ├── view_models/   Riverpod notifiers that screens watch; the only providers widgets use
@@ -234,6 +234,7 @@ lib/
 test/                      mirrors lib/
 ```
 
+- Logic that processes state over time (such as tracking codes across frames) lives in the view model file as top-level pure functions, so it is unit-tested without Riverpod.
 - A feature never imports another feature; shared code moves to `core/`. Folders are created when the first file needs them.
 - A repository wraps its data source directly. A `data/sources/` folder is added once a repository combines several sources; DTOs are split from models once an API shape differs from the model the app uses.
 

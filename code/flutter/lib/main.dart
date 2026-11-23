@@ -1,16 +1,20 @@
+import 'package:ar_ctf/features/scan/presentation/screens/scan_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-void main() {
-  runApp(const MainApp());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  //! the corner mapping is only validated in portrait
+  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  runApp(const ProviderScope(child: App()));
 }
 
-class MainApp extends StatelessWidget {
+class App extends StatelessWidget {
   const new({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: Scaffold(body: Center(child: Text('Hello World!'))),
-    );
+    return const MaterialApp(title: 'AR CTF', home: ScanScreen());
   }
 }
