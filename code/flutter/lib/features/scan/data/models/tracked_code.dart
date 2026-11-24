@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/painting.dart';
+import 'package:flutter/rendering.dart';
 
 /// A QR code seen by the camera, with the tracking hysteresis of spec 3.1
 /// step 4: tracked after [hitsToTrack] detections, lost after [lostAfter]
@@ -53,5 +53,41 @@ class TrackedCode {
       (viewSize.height - imageSize.height * scale) / 2,
     );
     return [for (final corner in corners) corner * scale + offset];
+  }
+
+  /// Projective map from the unit square onto the corners in a view of
+  /// [viewSize] (spec 3.1 step 5), embedded in a [Matrix4] for `Transform`.
+  /// Null when the corners are degenerate.
+  ///
+  /// how: closed-form square-to-quad mapping (Heckbert, "Fundamentals of
+  /// Texture Mapping and Image Warping", 1989), so no linear solve is needed.
+  Matrix4? homographyIn(Size viewSize) {
+    final [p0, p1, p2, p3] = cornersIn(viewSize);
+    final d1 = p1 - p2;
+    final d2 = p3 - p2;
+    final d3 = p0 - p1 + p2 - p3;
+    final den = d1.dx * d2.dy - d1.dy * d2.dx;
+    if (den == 0) return null;
+    final g = (d3.dx * d2.dy - d3.dy * d2.dx) / den;
+    final h = (d1.dx * d3.dy - d1.dy * d3.dx) / den;
+    // why: column-major; z passes through so the 3x3 map stays exact at z = 0
+    return Matrix4(
+      p1.dx - p0.dx + g * p1.dx,
+      p1.dy - p0.dy + g * p1.dy,
+      0,
+      g,
+      p3.dx - p0.dx + h * p3.dx,
+      p3.dy - p0.dy + h * p3.dy,
+      0,
+      h,
+      0,
+      0,
+      1,
+      0,
+      p0.dx,
+      p0.dy,
+      0,
+      1,
+    );
   }
 }
