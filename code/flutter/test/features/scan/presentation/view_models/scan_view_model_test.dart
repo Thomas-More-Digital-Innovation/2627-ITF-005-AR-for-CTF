@@ -49,4 +49,66 @@ void main() {
       );
     });
   });
+
+  group('track smoothing', () {
+    const moved = [
+      Offset(10, 0),
+      Offset(20, 0),
+      Offset(20, 10),
+      Offset(10, 10),
+    ];
+
+    test('a new code keeps its raw corners', () {
+      expect(seen(1)['a']!.corners, corners);
+    });
+
+    test('a code seen again lands between its old and new corners', () {
+      final codes = track(
+        seen(1),
+        {'a': moved},
+        imageSize,
+        t0.add(const Duration(milliseconds: 33)),
+      );
+      final dx = codes['a']!.corners.first.dx;
+      expect(dx, greaterThan(0));
+      expect(dx, lessThan(10));
+    });
+
+    test('restarts from the raw corners when the image size changes', () {
+      final codes = track(
+        seen(1),
+        {'a': moved},
+        const Size(200, 100),
+        t0.add(const Duration(milliseconds: 33)),
+      );
+      expect(codes['a']!.corners, moved);
+    });
+  });
+
+  group('oneEuro', () {
+    const frame = Duration(milliseconds: 33);
+    const start = (position: Offset(50, 50), velocity: Offset.zero);
+
+    test('keeps a still corner steady under one pixel of noise', () {
+      var corner = start;
+      for (var i = 0; i < 30; i++) {
+        final previous = corner.position;
+        final noise = i.isEven ? 1.0 : -1.0;
+        corner = oneEuro(corner, Offset(50 + noise, 50), frame);
+        expect((corner.position - previous).distance, lessThan(0.5));
+      }
+    });
+
+    test('follows a 100 px jump within 10 frames', () {
+      var corner = start;
+      for (var i = 0; i < 10; i++) {
+        corner = oneEuro(corner, const Offset(150, 50), frame);
+      }
+      expect(corner.position.dx, closeTo(150, 2));
+    });
+
+    test('keeps the previous state when no time has passed', () {
+      expect(oneEuro(start, const Offset(150, 50), Duration.zero), start);
+    });
+  });
 }

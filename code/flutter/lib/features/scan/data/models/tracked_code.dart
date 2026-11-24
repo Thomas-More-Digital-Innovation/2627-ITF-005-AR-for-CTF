@@ -12,17 +12,22 @@ class TrackedCode {
     required this.corners,
     required this.imageSize,
     required this.lastSeen,
+    this.velocities = _still,
     this.hits = 1,
   });
 
   static const hitsToTrack = 3;
   static const lostAfter = Duration(milliseconds: 250);
+  static const List<Offset> _still = [
+    Offset.zero,
+    Offset.zero,
+    Offset.zero,
+    Offset.zero,
+  ];
 
-  /// Corners in camera-image coordinates, clockwise from the top left.
   final List<Offset> corners;
-
+  final List<Offset> velocities;
   final Size imageSize;
-
   final DateTime lastSeen;
   final int hits;
 
@@ -30,13 +35,17 @@ class TrackedCode {
 
   bool isLostAt(DateTime now) => now.difference(lastSeen) > lostAfter;
 
-  TrackedCode seenAgain(List<Offset> corners, Size imageSize, DateTime at) =>
-      TrackedCode(
-        corners: corners,
-        imageSize: imageSize,
-        lastSeen: at,
-        hits: hits + 1,
-      );
+  TrackedCode seenAgain(
+    List<Offset> corners,
+    List<Offset> velocities,
+    DateTime at,
+  ) => TrackedCode(
+    corners: corners,
+    imageSize: imageSize,
+    lastSeen: at,
+    velocities: velocities,
+    hits: hits + 1,
+  );
 
   /// Maps the corners onto a view of [viewSize] that shows the camera image
   /// with [BoxFit.cover], centred.

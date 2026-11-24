@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:ar_ctf/features/scan/data/models/tracked_code.dart';
 import 'package:ar_ctf/features/scan/data/repositories/qr_tracking_repository.dart';
@@ -53,7 +54,8 @@ Map<String, TrackedCode> dropLost(
     if (!value.isLostAt(now)) key: value,
 };
 
-/// A code that was lost starts counting from one again.
+/// A code that was lost starts counting from one again. Corners of a code
+/// seen again are smoothed with [oneEuro].
 Map<String, TrackedCode> track(
   Map<String, TrackedCode> codes,
   Map<String, List<Offset>> detections,
@@ -63,9 +65,60 @@ Map<String, TrackedCode> track(
   final kept = dropLost(codes, now);
   return {
     ...kept,
-    for (final MapEntry(key: payload, value: corners) in detections.entries)
-      payload:
-          kept[payload]?.seenAgain(corners, imageSize, now) ??
-          TrackedCode(corners: corners, imageSize: imageSize, lastSeen: now),
+    for (final MapEntry(key: payload, value: raw) in detections.entries)
+      payload: switch (kept[payload]) {
+        // why: corners from another image size are in other coordinates
+        final previous? when previous.imageSize == imageSize => _smoothed(
+          previous,
+          raw,
+          now,
+        ),
+        _ => TrackedCode(corners: raw, imageSize: imageSize, lastSeen: now),
+      },
   };
 }
+
+TrackedCode _smoothed(TrackedCode previous, List<Offset> raw, DateTime now) {
+  final dt = now.difference(previous.lastSeen);
+  final corners = [
+    for (var i = 0; i < raw.length; i++)
+      oneEuro(
+        (position: previous.corners[i], velocity: previous.velocities[i]),
+        raw[i],
+        dt,
+      ),
+  ];
+  return previous.seenAgain(
+    [for (final c in corners) c.position],
+    [for (final c in corners) c.velocity],
+    now,
+  );
+}
+
+/// One corner after smoothing: its filtered position and filtered speed.
+typedef SmoothedCorner = ({Offset position, Offset velocity});
+
+// TODO: tuned on one phone; retune when testing more devices
+const _minCutoffHz = 1.0;
+const _beta = 0.007;
+const _derivativeCutoffHz = 1.0;
+
+/// One step of the One Euro filter (Casiez et al., 2012) for one corner:
+/// strong smoothing while the corner is still, little lag while it moves.
+SmoothedCorner oneEuro(SmoothedCorner previous, Offset raw, Duration dt) {
+  final seconds = dt.inMicroseconds / Duration.microsecondsPerSecond;
+  if (seconds <= 0) return previous;
+  final velocity = Offset.lerp(
+    previous.velocity,
+    (raw - previous.position) / seconds,
+    _alpha(_derivativeCutoffHz, seconds),
+  )!;
+  final cutoff = _minCutoffHz + _beta * velocity.distance;
+  return (
+    position: Offset.lerp(previous.position, raw, _alpha(cutoff, seconds))!,
+    velocity: velocity,
+  );
+}
+
+double _alpha(double cutoffHz, double seconds) =>
+    1 / (1 + 1 / (2 * math.pi * cutoffHz * seconds));
