@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:ar_ctf/features/scan/data/models/tracked_code.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -77,6 +79,27 @@ void main() {
         ).homographyIn(view),
         isNull,
       );
+    });
+  });
+
+  group('sideIn', () {
+    const view = Size(100, 100);
+    TrackedCode code(List<Offset> corners) =>
+        TrackedCode(corners: corners, imageSize: view, lastSeen: t0);
+
+    test('is the side length of an upright square', () {
+      expect(code(corners).sideIn(view), closeTo(10, 1e-9));
+    });
+
+    test('ignores rotation', () {
+      const diamond = [
+        Offset(5, 0),
+        Offset(10, 5),
+        Offset(5, 10),
+        Offset(0, 5),
+      ];
+      // a 10 px square turned 45° has sides of 5·√2 px
+      expect(code(diamond).sideIn(view), closeTo(5 * math.sqrt2, 1e-9));
     });
   });
 }
