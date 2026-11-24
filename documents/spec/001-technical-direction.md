@@ -39,7 +39,7 @@ The solution should be reusable for other events and venues.
 | Architecture | MVVM with Riverpod & go-router |
 | Detection boundary | A `BoothDetector` interface emits booth sightings with an optional pose (3.4). AR approaches are implementations behind it |
 | AR approach | Recommendation, pending client: marker-based AR. The printed QR code is the marker; the flag is rendered on top of it while it is in view |
-| AR implementation | Recommendation, pending client: AR without an AR SDK, entirely in Dart. `mobile_scanner` (ML Kit on Android, Vision on iOS) for QR payload and corner points, pose from a homography, rendering with Flutter `CustomPainter` / `Transform`. No custom native code |
+| AR implementation | Recommendation, pending client: AR without an AR SDK, entirely in Dart. `mobile_scanner` (ML Kit on Android, Vision on iOS) for QR payload and corner points, placement on the code from a homography (no 3D pose, see 3.1), rendering with Flutter widgets, `Transform` and `CustomPainter`. No custom native code |
 | QR payload | Random scan token per booth; the app caches only its hash (3.2) |
 | Answer check | In the API: normalisation plus fuzzy matching against accepted answers (4.2). If needed with an AI model |
 | Flags | Stored only on the server; returned by the API after a correct answer |
@@ -62,13 +62,13 @@ Pending the client meeting (see 3.7 for the alternatives). The flag is anchored 
 2. The corners are mapped to screen coordinates. The preview is drawn with `BoxFit.cover`, so the mapping is a uniform scale of `max(viewW / imgW, viewH / imgH)` plus a centring offset. `Barcode.scaleCorners` stretches both axes independently and is not used for this.
 3. Corners are smoothed per corner (One Euro filter; an exponential moving average is acceptable as a first version).
 4. Tracking state uses hysteresis: a marker counts as tracked after 3 consecutive detections and as lost after about 250 ms without one, after which the flag fades out. This prevents flicker from missed frames and flashes from false detections.
-5. The four corners and the known square of the code give a homography. It is decomposed into rotation and translation using a focal length estimated from a typical phone field of view (65-75°), which gives a 3D coordinate system on the paper.
-6. The presentation (5.4) is rendered on top of the camera preview. The first presentation is a simple flag (pole and cloth) standing perpendicular to the code, at its centre, with the cloth optionally animated with a wave. It is a small triangle mesh, projected with the pose and drawn by a `CustomPainter` with `canvas.drawVertices`, back to front.
-7. A tap inside the projected outline opens the question (5.3).
+5. The four corners and the known square of the code give a homography from the unit square to the screen. It gives the code's centre (the image of the square's centre, which stays correct under perspective) and its size on screen (the square root of the outline's area).
+6. The presentation (5.4) is rendered on top of the camera preview in two parts: a shadow lying flat on the paper, mapped with the homography (embedded in a `Matrix4` on a `Transform`), and the presentation standing upright on the screen with its foot on the code's centre, scaled with the code's size. The first presentation is a flag (`Icons.flag` until there is artwork).
+7. A tap on the standing presentation opens the question (5.3).
 
-Before the standing flag, a first milestone draws the mapped corners and a flat overlay (the homography embedded in a `Matrix4` on a `Transform`) to validate the corner mapping on real devices.
+No 3D pose is estimated. Participants look at the code from above, and from above an object standing perpendicular to the paper points at the camera and is seen end-on, so a pose adds nothing visible. A pose decomposition was tried (Zhang's method with a focal length from an estimated 70° field of view): with real corners it lost the tilt and kept pointing the normal at the camera, because it reads tilt only from perspective, which is weak at arm's length. Upright on the screen looks the same on a table and on a wall, and needs no camera calibration.
 
-While the phone moves, the flag trails slightly behind the code and settles once the phone is held still. This is accepted. The preview is shown live, while ML Kit reports corners for a frame that is already a little older, and the two streams cannot be synchronised without native camera code. Predicting the corners ahead was rejected: it overshoots when the phone stops and makes jitter worse. The lag does not affect use, because the question only opens while the code is tracked and stable. If the top of the standing flag trails visibly, prediction can be tried for the top of the flag only.
+While the phone moves, the flag trails slightly behind the code and settles once the phone is held still. This is accepted. The preview is shown live, while ML Kit reports corners for a frame that is already a little older, and the two streams cannot be synchronised without native camera code. Predicting the corners ahead was rejected: it overshoots when the phone stops and makes jitter worse. The lag does not affect use, because the question only opens while the code is tracked and stable. If the standing flag trails visibly, prediction can be tried for its position only.
 
 Several codes can be in view at once. Each is tracked and rendered independently; the tap decides which booth is used.
 
@@ -255,7 +255,7 @@ Material on Android and platform-appropriate behaviour on iOS (navigation, permi
 
 ### 5.4 Presentation
 
-Presentation is a field on the booth, so new presentations need no schema change. Each value maps to a built-in presentation rendered in Flutter; no 3D model files are loaded. The first value is the standing flag from 3.1. Further presentations are chosen with the client.
+Presentation is a field on the booth, so new presentations need no schema change. Each value maps to a built-in presentation rendered in Flutter as a flat widget standing upright on the screen (an icon, or a bundled image once there is artwork); no 3D model files are loaded. The first value is the standing flag from 3.1. Further presentations are chosen with the client.
 
 ### 5.5 Roles
 

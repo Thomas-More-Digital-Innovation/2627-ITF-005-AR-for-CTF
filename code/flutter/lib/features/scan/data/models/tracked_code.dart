@@ -99,4 +99,17 @@ class TrackedCode {
       1,
     );
   }
+
+  /// Side length of the code in a view of [viewSize]: the square root of the
+  /// area of its outline, so rotation and foreshortening are averaged out.
+  double sideIn(Size viewSize) {
+    final corners = cornersIn(viewSize);
+    var doubleArea = 0.0;
+    for (var i = 0; i < corners.length; i++) {
+      final a = corners[i];
+      final b = corners[(i + 1) % corners.length];
+      doubleArea += a.dx * b.dy - b.dx * a.dy;
+    }
+    return math.sqrt(doubleArea.abs() / 2);
+  }
 }
