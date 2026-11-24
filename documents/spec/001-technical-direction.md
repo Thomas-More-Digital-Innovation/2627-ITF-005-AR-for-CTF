@@ -68,6 +68,8 @@ Pending the client meeting (see 3.7 for the alternatives). The flag is anchored 
 
 Before the standing flag, a first milestone draws the mapped corners and a flat overlay (the homography embedded in a `Matrix4` on a `Transform`) to validate the corner mapping on real devices.
 
+While the phone moves, the flag trails slightly behind the code and settles once the phone is held still. This is accepted. The preview is shown live, while ML Kit reports corners for a frame that is already a little older, and the two streams cannot be synchronised without native camera code. Predicting the corners ahead was rejected: it overshoots when the phone stops and makes jitter worse. The lag does not affect use, because the question only opens while the code is tracked and stable. If the top of the standing flag trails visibly, prediction can be tried for the top of the flag only.
+
 Several codes can be in view at once. Each is tracked and rendered independently; the tap decides which booth is used.
 
 This works indoors, needs no venue scanning or cloud service, runs on every phone with a camera, and keeps all AR logic in Dart so that iOS needs no second implementation.
