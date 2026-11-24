@@ -8,18 +8,48 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 class TrackedCodesOverlay extends ConsumerWidget {
   const new({required this.size, super.key});
 
+  static const _flagSize = 96.0;
+
   final Size size;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = Theme.of(context).colorScheme;
-    return CustomPaint(
-      size: size,
-      painter: _OutlinePainter(
-        codes: ref.watch(scanViewModelProvider).values.toList(),
-        trackedColor: colors.primary,
-        pendingColor: colors.tertiary,
-      ),
+    final codes = ref.watch(scanViewModelProvider).values.toList();
+    // why: shrinks the icon's box to the unit square the homography maps from
+    final toUnitSquare = Matrix4.diagonal3Values(
+      1 / _flagSize,
+      1 / _flagSize,
+      1,
+    );
+    return Stack(
+      children: [
+        CustomPaint(
+          size: size,
+          painter: _OutlinePainter(
+            codes: codes,
+            trackedColor: colors.primary,
+            pendingColor: colors.tertiary,
+          ),
+        ),
+        // ponytail: a flat icon on the code validates the corner mapping
+        // (spec 3.1 milestone); replaced by the projected flag mesh (step 6)
+        for (final code in codes)
+          if (code.isTracked)
+            if (code.homographyIn(size) case final homography?)
+              Positioned(
+                left: 0,
+                top: 0,
+                child: Transform(
+                  transform: homography.multiplied(toUnitSquare),
+                  child: Icon(
+                    Icons.flag,
+                    size: _flagSize,
+                    color: colors.primary,
+                  ),
+                ),
+              ),
+      ],
     );
   }
 }
